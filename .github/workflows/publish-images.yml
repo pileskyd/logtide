@@ -14,8 +14,7 @@ on:
         type: string
 
 env:
-  NODE_VERSION: '20'
-  PNPM_VERSION: '10'
+  BUN_VERSION: '1.4.0'
 
 permissions:
   contents: read

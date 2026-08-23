@@ -6,7 +6,7 @@
  * Compares TimescaleDB, ClickHouse, and MongoDB across all storage operations.
  *
  * Usage:
- *   npx tsx benchmark/run.ts [options]
+ *   bun benchmark/run.ts [options]
  *
  * Options:
  *   -v, --volume    Comma-separated volume tiers: 1k,10k,100k,1m,10m,50m (default: all)
@@ -17,10 +17,10 @@
  *   -o, --output    JSON output file path (default: benchmark-results.json)
  *
  * Examples:
- *   npx tsx benchmark/run.ts
- *   npx tsx benchmark/run.ts -v 1k,10k -e timescale,clickhouse
- *   npx tsx benchmark/run.ts -v 1m -s logs -i 10
- *   npx tsx benchmark/run.ts -v 10m,50m -e clickhouse -s logs,metrics
+ *   bun benchmark/run.ts
+ *   bun benchmark/run.ts -v 1k,10k -e timescale,clickhouse
+ *   bun benchmark/run.ts -v 1m -s logs -i 10
+ *   bun benchmark/run.ts -v 10m,50m -e clickhouse -s logs,metrics
  */
 
 import { DEFAULT_CONFIG, VOLUME_TIERS, parseCLIArgs } from './config.js';

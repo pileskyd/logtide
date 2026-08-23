@@ -1,6 +1,6 @@
 # Tenant Isolation Audit
 
-Living document. Last updated 2026-05-27 (post-audit). The codebase is tenant-safe with all critical and application-layer gaps fixed; this document, the allowlist, and the isolation test suite are the ongoing enforcement layer. Run `npm run report:tenant-scoping` from `packages/backend` to regenerate the inventory.
+Living document. Last updated 2026-05-27 (post-audit). The codebase is tenant-safe with all critical and application-layer gaps fixed; this document, the allowlist, and the isolation test suite are the ongoing enforcement layer. Run `bun run report:tenant-scoping` from `packages/backend` to regenerate the inventory.
 
 ---
 

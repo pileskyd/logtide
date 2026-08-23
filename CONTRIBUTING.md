@@ -31,10 +31,10 @@ Enhancement suggestions are tracked as GitHub issues. When creating an enhanceme
 ### Pull Requests
 
 1. **Fork the repository** and create your branch from `main`
-2. **Install dependencies** with `pnpm install`
+2. **Install dependencies** with `bun install`
 3. **Make your changes** following our coding standards
 4. **Add tests** for any new functionality
-5. **Ensure all tests pass** with `pnpm test`
+5. **Ensure all tests pass** with `bun test`
 6. **Update documentation** if needed
 7. **Submit a pull request**
 
@@ -42,8 +42,7 @@ Enhancement suggestions are tracked as GitHub issues. When creating an enhanceme
 
 ### Prerequisites
 
-- Node.js >= 20.0.0
-- pnpm >= 10.0.0
+- Bun >= 1.4.0
 - Docker and Docker Compose (for local development)
 
 ### Getting Started
@@ -54,14 +53,14 @@ git clone https://github.com/logtide-dev/logtide.git
 cd logtide
 
 # Install dependencies
-pnpm install
+bun install
 
 # Build shared package
-pnpm build:shared
+bun run build:shared
 
 # Start development environment
 docker-compose up -d  # Start PostgreSQL and Redis
-pnpm dev              # Start backend and frontend
+bun run dev          # Start backend and frontend
 ```
 
 ### Project Structure
@@ -80,13 +79,13 @@ logtide/
 
 ```bash
 # Run all tests
-pnpm test
+bun run test
 
 # Run backend tests with coverage
-cd packages/backend && pnpm test:ci:coverage
+cd packages/backend && bun run test:ci:coverage
 
 # Run E2E tests
-pnpm test:e2e
+bun run test:e2e
 ```
 
 ## Coding Standards

@@ -208,7 +208,7 @@ function main() {
     console.error(`Found ${violations.length} unscoped tenant-table queries not in allowlist:\n`);
     for (const v of violations) console.error(`  ${v.table}  ${v.file}:${v.line}`);
     console.error(`\nAdd an organization_id/project_id filter, annotate with "// ${OK_MARKER}: <reason>",`);
-    console.error(`or run "npm run check:tenant-scoping -- --update-allowlist" to baseline (review reasons first).`);
+    console.error(`or run "bun run check:tenant-scoping -- --update-allowlist" to baseline (review reasons first).`);
     process.exit(1);
   }
   console.log(`OK: all ${findings.length} tenant-table access sites are scoped or allowlisted.`);

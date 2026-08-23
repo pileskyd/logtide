@@ -13,8 +13,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  NODE_VERSION: '20'
-  PNPM_VERSION: '10'
+  BUN_VERSION: '1.4.0'
 
 # Restrict permissions for all jobs (principle of least privilege)
 permissions:
@@ -64,25 +63,19 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
         with:
-          version: ${{ env.PNPM_VERSION }}
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'pnpm'
+          bun-version: ${{ env.BUN_VERSION }}
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: bun install --frozen-lockfile
 
       - name: Build shared package
-        run: pnpm --filter '@logtide/shared' build
+        run: bun run --filter '@logtide/shared' build
 
       - name: Build reservoir package
-        run: pnpm --filter '@logtide/reservoir' build
+        run: bun run --filter '@logtide/reservoir' build
 
       - name: Run backend tests with coverage
         working-directory: packages/backend
@@ -169,31 +162,25 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
         with:
-          version: ${{ env.PNPM_VERSION }}
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'pnpm'
+          bun-version: ${{ env.BUN_VERSION }}
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: bun install --frozen-lockfile
 
       - name: Build shared package
-        run: pnpm --filter '@logtide/shared' build
+        run: bun run --filter '@logtide/shared' build
 
       - name: Build reservoir package
-        run: pnpm --filter '@logtide/reservoir' build
+        run: bun run --filter '@logtide/reservoir' build
 
       - name: Run reservoir tests with coverage
         working-directory: packages/reservoir
         env:
           REDIS_URL: redis://localhost:6380
-        run: npx vitest run --coverage --coverage.reporter=text --coverage.reporter=lcov --coverage.reporter=json --reporter=verbose
+        run: bunx vitest run --coverage --coverage.reporter=text --coverage.reporter=lcov --coverage.reporter=json --reporter=verbose
 
       - name: Upload reservoir coverage to Codecov
         uses: codecov/codecov-action@v5
@@ -216,37 +203,31 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
         with:
-          version: ${{ env.PNPM_VERSION }}
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'pnpm'
+          bun-version: ${{ env.BUN_VERSION }}
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: bun install --frozen-lockfile
 
       - name: Build shared package
-        run: pnpm --filter '@logtide/shared' build
+        run: bun run --filter '@logtide/shared' build
 
       - name: Build reservoir package
-        run: pnpm --filter '@logtide/reservoir' build
+        run: bun run --filter '@logtide/reservoir' build
 
       - name: Typecheck backend
-        run: pnpm --filter '@logtide/backend' typecheck
+        run: bun run --filter '@logtide/backend' typecheck
 
       - name: Tenant scoping check
         working-directory: packages/backend
-        run: npm run check:tenant-scoping
+        run: bun run check:tenant-scoping
 
       - name: Typecheck frontend
         env:
           PUBLIC_API_URL: http://localhost:8080
-        run: pnpm --filter '@logtide/frontend' typecheck
+        run: bun run --filter '@logtide/frontend' typecheck
 
   # ====================
   # Shared + Frontend Unit Tests
@@ -259,30 +240,24 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
         with:
-          version: ${{ env.PNPM_VERSION }}
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'pnpm'
+          bun-version: ${{ env.BUN_VERSION }}
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: bun install --frozen-lockfile
 
       - name: Build shared package
-        run: pnpm --filter '@logtide/shared' build
+        run: bun run --filter '@logtide/shared' build
 
       - name: Run shared unit tests
-        run: pnpm --filter '@logtide/shared' test
+        run: bun run --filter '@logtide/shared' test
 
       - name: Run frontend unit tests
         env:
           PUBLIC_API_URL: http://localhost:8080
-        run: pnpm --filter '@logtide/frontend' test
+        run: bun run --filter '@logtide/frontend' test
 
   # ====================
   # E2E Tests (Playwright)
@@ -296,23 +271,17 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
         with:
-          version: ${{ env.PNPM_VERSION }}
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'pnpm'
+          bun-version: ${{ env.BUN_VERSION }}
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: bun install --frozen-lockfile
 
       - name: Install Playwright browsers
         working-directory: packages/frontend
-        run: npx playwright install --with-deps chromium
+        run: bunx playwright install --with-deps chromium
 
       - name: Start test infrastructure
         run: |
@@ -330,7 +299,7 @@ jobs:
           E2E: 'true'
           TEST_API_URL: http://localhost:3001
           TEST_FRONTEND_URL: http://localhost:3002
-        run: npx playwright test --reporter=list
+        run: bunx playwright test --reporter=list
 
       - name: Upload Playwright report
         uses: actions/upload-artifact@v4

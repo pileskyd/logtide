@@ -123,6 +123,6 @@ if [ -n "$TEST_PATTERN" ]; then
 fi
 
 log_info "Running E2E tests..."
-E2E=true npx playwright test $PLAYWRIGHT_ARGS
+E2E=true bunx playwright test $PLAYWRIGHT_ARGS
 
 log_info "E2E tests completed!"

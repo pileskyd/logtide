@@ -25,6 +25,8 @@
 
 > **🌊 LogTide 1.3.2 (public beta):** unified **Logs, Traces & Metrics** with a built-in **SIEM**, multi-engine storage (TimescaleDB / ClickHouse / MongoDB), uptime monitoring, parsing pipelines, and custom dashboards.
 
+> **Fork note:** This fork tests moving the monorepo from Node.js with pnpm to Bun 1.4. The application and package code remain unchanged.
+
 ---
 
 ## 👋 What is LogTide?

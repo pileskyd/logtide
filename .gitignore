@@ -6,7 +6,8 @@
 
 # Dependencies
 node_modules/
-.pnpm-store/
+.bun/
+.bun-install-cache/
 
 # Build output
 dist/
@@ -22,7 +23,7 @@ build/
 logs/
 *.log
 npm-debug.log*
-pnpm-debug.log*
+bun-debug.log*
 
 # OS
 .DS_Store

@@ -1,73 +1,55 @@
 # Build stage
-FROM node:20-alpine AS builder
+FROM oven/bun:1.4.0-alpine AS builder
 
-# Install pnpm and build dependencies
-RUN apk add --no-cache python3 make g++ && \
-    npm install -g pnpm
+RUN apk add --no-cache python3 make g++
 
 WORKDIR /app
 
-# Copy workspace files
-COPY pnpm-workspace.yaml package.json pnpm-lock.yaml* tsconfig.base.json ./
-
-# Copy all package.json files first to satisfy pnpm workspace requirements
+# Copy manifests first so dependency installation can be cached.
+COPY package.json bun.lock tsconfig.base.json ./
 COPY packages/shared/package.json ./packages/shared/
 COPY packages/reservoir/package.json ./packages/reservoir/
 COPY packages/backend/package.json ./packages/backend/
 COPY packages/frontend/package.json ./packages/frontend/
 
-# Install dependencies
-RUN pnpm install --frozen-lockfile
+RUN bun install --frozen-lockfile
 
-# Now copy the source for the packages we need to build
 COPY packages/shared ./packages/shared
 COPY packages/frontend ./packages/frontend
 
-# Build shared package first
-RUN pnpm --filter '@logtide/shared' build
+RUN bun run --filter '@logtide/shared' build
 
-# Build frontend
 ARG PUBLIC_API_URL=http://localhost:8080
 ENV PUBLIC_API_URL=$PUBLIC_API_URL
 
-RUN pnpm --filter '@logtide/frontend' build
+RUN bun run --filter '@logtide/frontend' build
 
 # Production stage
-FROM node:20-alpine
-
-# Install pnpm
-RUN npm install -g pnpm
+FROM oven/bun:1.4.0-alpine
 
 WORKDIR /app
 
-# Copy workspace files
-COPY pnpm-workspace.yaml package.json pnpm-lock.yaml ./
+COPY package.json bun.lock ./
 COPY packages/shared/package.json ./packages/shared/
 COPY packages/reservoir/package.json ./packages/reservoir/
 COPY packages/backend/package.json ./packages/backend/
 COPY packages/frontend/package.json ./packages/frontend/
 
-# Install production dependencies only
-RUN pnpm install --frozen-lockfile --prod
+RUN bun install --frozen-lockfile --production
 
-# Copy built files
 COPY --from=builder /app/packages/shared/dist ./packages/shared/dist
 COPY --from=builder /app/packages/frontend/build ./packages/frontend/build
 COPY --from=builder /app/packages/frontend/package.json ./packages/frontend/
 
-# Set working directory to frontend
 WORKDIR /app/packages/frontend
 
-# Expose port
 EXPOSE 3000
 
 ENV NODE_ENV=production
 ENV PORT=3000
 ENV HOST=0.0.0.0
 
-# Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
-  CMD node -e "require('http').get('http://localhost:3000/', (r) => r.statusCode === 200 ? process.exit(0) : process.exit(1))"
+  CMD bun -e "require('http').get('http://localhost:3000/', (r) => r.statusCode === 200 ? process.exit(0) : process.exit(1))"
 
-# Start server
-CMD ["node", "build/index.js"]
+CMD ["bun", "build/index.js"]

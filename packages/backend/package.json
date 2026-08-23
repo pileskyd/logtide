@@ -7,23 +7,23 @@
   "main": "./dist/server.js",
   "types": "./dist/server.d.ts",
   "scripts": {
-    "dev": "tsx watch src/server.ts",
-    "dev:worker": "tsx watch src/worker.ts",
+    "dev": "bun --watch src/server.ts",
+    "dev:worker": "bun --watch src/worker.ts",
     "build": "tsc",
-    "start": "node dist/server.js",
-    "start:worker": "node dist/worker.js",
-    "migrate": "tsx src/scripts/migrate.ts",
-    "migrate:down": "tsx src/scripts/migrate.ts down",
-    "migrate:cleanup": "tsx src/scripts/cleanup-old-migrations.ts",
-    "check-schema": "tsx src/scripts/check-schema.ts",
-    "enable-system-login": "tsx src/scripts/enable-system-login.ts",
-    "add-system-to-org": "tsx src/scripts/add-system-to-org.ts",
-    "test": "node src/scripts/run-tests.mjs",
-    "test:watch": "node src/scripts/run-tests.mjs --watch",
-    "test:coverage": "node src/scripts/run-tests.mjs --coverage",
+    "start": "bun dist/server.js",
+    "start:worker": "bun dist/worker.js",
+    "migrate": "bun src/scripts/migrate.ts",
+    "migrate:down": "bun src/scripts/migrate.ts down",
+    "migrate:cleanup": "bun src/scripts/cleanup-old-migrations.ts",
+    "check-schema": "bun src/scripts/check-schema.ts",
+    "enable-system-login": "bun src/scripts/enable-system-login.ts",
+    "add-system-to-org": "bun src/scripts/add-system-to-org.ts",
+    "test": "bun src/scripts/run-tests.mjs",
+    "test:watch": "bun src/scripts/run-tests.mjs --watch",
+    "test:coverage": "bun src/scripts/run-tests.mjs --coverage",
     "test:ci": "vitest run",
     "test:ci:coverage": "vitest run --coverage",
-    "typecheck": "pnpm --filter @logtide/shared --filter @logtide/reservoir build && tsc --noEmit",
+    "typecheck": "bun run --filter @logtide/shared --filter @logtide/reservoir build && tsc --noEmit",
     "clean": "rm -rf dist",
     "load:smoke": "k6 run load-tests/smoke.js",
     "load:ingestion": "k6 run load-tests/ingestion.js",
@@ -33,11 +33,11 @@
     "load:e2e:ingestion": "bash scripts/run-load-tests.sh ingestion",
     "load:e2e:query": "bash scripts/run-load-tests.sh query",
     "load:e2e:all": "bash scripts/run-load-tests.sh all",
-    "seed:load-test": "tsx src/scripts/seed-load-test.ts",
-    "seed:massive": "tsx src/scripts/seed-massive-data.ts",
-    "migrate:storage": "tsx src/scripts/migrate-storage.ts",
-    "check:tenant-scoping": "tsx scripts/check-tenant-scoping.ts",
-    "report:tenant-scoping": "tsx scripts/check-tenant-scoping.ts --report"
+    "seed:load-test": "bun src/scripts/seed-load-test.ts",
+    "seed:massive": "bun src/scripts/seed-massive-data.ts",
+    "migrate:storage": "bun src/scripts/migrate-storage.ts",
+    "check:tenant-scoping": "bun scripts/check-tenant-scoping.ts",
+    "report:tenant-scoping": "bun scripts/check-tenant-scoping.ts --report"
   },
   "dependencies": {
     "@fastify/cors": "^10.0.2",
@@ -69,7 +69,6 @@
     "protobufjs": "^7.6.3",
     "safe-regex2": "^5.0.0",
     "source-map": "^0.7.6",
-    "tsx": "^4.21.0",
     "undici": "^7.28.0",
     "zod": "^3.25.76"
   },
@@ -87,6 +86,7 @@
     "vitest": "^3.2.6"
   },
   "engines": {
-    "node": ">=20.0.0"
-  }
+    "bun": ">=1.4.0"
+  },
+  "packageManager": "bun@1.4.0"
 }

@@ -67,7 +67,7 @@ function printHelp(): void {
 Storage Migration Script - Migrate data between TimescaleDB and ClickHouse
 
 Usage:
-  npx tsx src/scripts/migrate-storage.ts [options]
+  bun src/scripts/migrate-storage.ts [options]
 
 Options:
   --from <engine>       Source engine (timescale|clickhouse). Default: current STORAGE_ENGINE
@@ -79,10 +79,10 @@ Options:
   --help                Show this help
 
 Examples:
-  npx tsx src/scripts/migrate-storage.ts
-  npx tsx src/scripts/migrate-storage.ts --from timescale --to clickhouse
-  npx tsx src/scripts/migrate-storage.ts --dry-run
-  npx tsx src/scripts/migrate-storage.ts --project-id 550e8400-e29b-41d4-a716-446655440000 --batch-size 2000
+  bun src/scripts/migrate-storage.ts
+  bun src/scripts/migrate-storage.ts --from timescale --to clickhouse
+  bun src/scripts/migrate-storage.ts --dry-run
+  bun src/scripts/migrate-storage.ts --project-id 550e8400-e29b-41d4-a716-446655440000 --batch-size 2000
 `);
 }
 

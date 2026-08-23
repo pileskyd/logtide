@@ -26,7 +26,7 @@ echo "PostgreSQL is ready!"
 # Run database migrations
 echo ""
 echo "Running database migrations..."
-node dist/scripts/migrate.js
+bun dist/scripts/migrate.js
 
 if [ $? -ne 0 ]; then
   echo "Migration failed"
@@ -39,8 +39,8 @@ echo ""
 # Start the application (server or worker)
 if [ "$1" = "worker" ]; then
   echo "Starting LogTide Worker..."
-  exec node dist/worker.js
+  exec bun dist/worker.js
 else
   echo "Starting LogTide API Server..."
-  exec node dist/server.js
+  exec bun dist/server.js
 fi

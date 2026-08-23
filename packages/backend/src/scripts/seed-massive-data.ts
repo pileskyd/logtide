@@ -2,7 +2,7 @@
  * Seed script for generating massive test data (30M+ records)
  * Uses PostgreSQL generate_series for maximum performance
  *
- * Usage: npx tsx src/scripts/seed-massive-data.ts
+ * Usage: bun src/scripts/seed-massive-data.ts
  */
 
 import dotenv from 'dotenv';
