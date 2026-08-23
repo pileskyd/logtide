@@ -96,7 +96,7 @@ jobs:
           SMTP_FROM: test@logtide.dev
           RATE_LIMIT_MAX: 1000
           RATE_LIMIT_WINDOW: 60000
-        run: pnpm test:ci:coverage
+        run: bun run test:ci:coverage
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5

@@ -14,7 +14,7 @@ or background job (see `docs/security/tenant-isolation-audit.md`):
 - [ ] Background jobs carry the org id and the consumer re-validates it.
 - [ ] Ids from a URL parameter or request body are verified to belong to the requesting tenant before use.
 - [ ] New data-access paths are added to the audit doc.
-- [ ] `npm run check:tenant-scoping` passes (run from `packages/backend`).
+- [ ] `bun run check:tenant-scoping` passes (run from `packages/backend`).
 
 <!-- If a change is intentionally cross-tenant (admin / platform), say so here. -->
 
