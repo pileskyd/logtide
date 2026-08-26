@@ -23,6 +23,9 @@ require() { command -v "$1" >/dev/null || { echo "Required command not found: $1
 for command in docker curl python3 git awk; do require "$command"; done
 docker compose version >/dev/null || { echo 'Docker Compose v2 is required.' >&2; exit 1; }
 mkdir -p "$RESULT_DIR"
+# Keep the complete Docker build output (including dependency-install and compile steps)
+# alongside structured phase timings for later inspection.
+exec > >(tee -a "$RESULT_DIR/runner.log") 2>&1
 
 phase() {
   local name="$1"; shift
@@ -78,8 +81,12 @@ ready() {
 phase backend_ready ready
 
 RUNTIME="$(docker exec "$BACKEND_CONTAINER" sh -c 'command -v bun >/dev/null && echo bun || echo node')"
-API_KEY="$(docker exec "$BACKEND_CONTAINER" sh -c "$RUNTIME dist/scripts/seed-load-test.js" | tail -n 1)"
-[[ "$API_KEY" == lp_load_* ]] || { echo 'Could not create the benchmark API key.' >&2; exit 1; }
+RUNTIME_VERSION="$(docker exec "$BACKEND_CONTAINER" "$RUNTIME" --version)"
+seed_backend() {
+  API_KEY="$(docker exec "$BACKEND_CONTAINER" sh -c "$RUNTIME dist/scripts/seed-load-test.js" | tail -n 1)"
+  [[ "$API_KEY" == lp_load_* ]]
+}
+phase seed_fixed_data seed_backend
 NETWORK="$(docker inspect "$BACKEND_CONTAINER" --format '{{range $name, $_ := .NetworkSettings.Networks}}{{$name}}{{end}}')"
 
 python3 - "$RESULT_DIR/metadata.json" <<PY
@@ -87,7 +94,8 @@ import json, platform, subprocess, sys
 result = {
   'git_commit': subprocess.check_output(['git', '-C', '$ROOT_DIR', 'rev-parse', 'HEAD'], text=True).strip(),
   'git_branch': subprocess.check_output(['git', '-C', '$ROOT_DIR', 'branch', '--show-current'], text=True).strip(),
-  'backend_runtime': '$RUNTIME', 'backend_image': '$BACKEND_IMAGE', 'frontend_image': '$FRONTEND_IMAGE',
+  'backend_runtime': '$RUNTIME', 'backend_runtime_version': '$RUNTIME_VERSION',
+  'backend_image': '$BACKEND_IMAGE', 'frontend_image': '$FRONTEND_IMAGE',
   'compose_profile': 'default', 'rate_requests_per_second': $RATE, 'duration': '$DURATION',
   'warmup_duration': '$WARMUP_DURATION', 'batch_size': $BATCH_SIZE, 'k6_image': '$K6_IMAGE',
   'clone_seconds': '${BENCH_CLONE_SECONDS:-}', 'host_platform': platform.platform(),
@@ -120,3 +128,4 @@ phase write_report python3 "$ROOT_DIR/benchmarks/runtime/summarize.py" "$RESULT_
 
 echo "Comparable report: $RESULT_DIR/result.json"
 echo "Lifecycle telemetry: $RESULT_DIR/telemetry.jsonl"
+echo "Complete build and runtime log: $RESULT_DIR/runner.log"
