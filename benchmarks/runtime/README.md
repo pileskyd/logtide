@@ -34,8 +34,9 @@ BENCH_DURATION=30m BENCH_WARMUP_DURATION=1m BENCH_RATE=100 \
 
 Every run creates `benchmark-results/runtime/<branch>-<timestamp>/` inside its cloned checkout:
 
-- `metadata.json`: commit, branch, selected runtime, image tags, Docker/k6 versions and workload settings;
-- `telemetry.jsonl`: wall-clock duration and status of cleanup, backend build, frontend build, Compose default-profile start, backend readiness, warm-up, measured load and report generation;
+- `metadata.json`: commit, branch, selected runtime **and exact runtime version**, image tags, Docker/k6 versions and workload settings;
+- `telemetry.jsonl`: wall-clock duration and status of cleanup, backend build, frontend build, Compose default-profile start, backend readiness, fixed-data seed, warm-up, measured load and report generation;
+- `runner.log`: complete Docker build output (including the runtime-specific dependency installation and compilation steps) plus runner output;
 - `result.json`: the comparison report;
 - `k6-summary.json` and `k6-output.txt`: raw load-generator data;
 - `container-samples.csv`: one-second backend container CPU/RSS samples.
