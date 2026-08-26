@@ -7,6 +7,10 @@ const apiKey = __ENV.API_KEY;
 const rate = Number(__ENV.BENCH_RATE || 100);
 const duration = __ENV.BENCH_DURATION || '3m';
 const batchSize = Number(__ENV.BENCH_BATCH_SIZE || 10);
+// Capacity runs may need less eager VU allocation than the conservative default.
+// Keep maxVUs above preAllocatedVUs so k6 can still compensate for latency spikes.
+const preAllocatedVUs = Number(__ENV.BENCH_PREALLOCATED_VUS || Math.max(20, Math.ceil(rate / 2)));
+const maxVUs = Number(__ENV.BENCH_MAX_VUS || Math.max(preAllocatedVUs * 2, rate * 2));
 
 if (!baseUrl || !apiKey) {
   throw new Error('BASE_URL and API_KEY must be set');
@@ -32,8 +36,8 @@ export const options = {
       rate,
       timeUnit: '1s',
       duration,
-      preAllocatedVUs: Math.max(20, Math.ceil(rate / 2)),
-      maxVUs: Math.max(100, rate * 2),
+      preAllocatedVUs,
+      maxVUs,
     },
   },
   // Threshold status is reported by the runner after the raw result is saved.

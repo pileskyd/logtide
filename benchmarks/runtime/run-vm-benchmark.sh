@@ -14,6 +14,8 @@ RATE="${BENCH_RATE:-100}"
 DURATION="${BENCH_DURATION:-3m}"
 WARMUP_DURATION="${BENCH_WARMUP_DURATION:-30s}"
 BATCH_SIZE="${BENCH_BATCH_SIZE:-10}"
+PREALLOCATED_VUS="${BENCH_PREALLOCATED_VUS:-}"
+MAX_VUS="${BENCH_MAX_VUS:-}"
 K6_IMAGE="${K6_IMAGE:-grafana/k6:0.54.0}"
 BACKEND_IMAGE="logtide-runtime-benchmark/backend:$RUN_ID"
 FRONTEND_IMAGE="logtide-runtime-benchmark/frontend:$RUN_ID"
@@ -104,7 +106,8 @@ result = {
   'backend_runtime': '$RUNTIME', 'backend_runtime_version': '$RUNTIME_VERSION',
   'backend_image': '$BACKEND_IMAGE', 'frontend_image': '$FRONTEND_IMAGE',
   'compose_profile': 'default', 'rate_requests_per_second': $RATE, 'duration': '$DURATION',
-  'warmup_duration': '$WARMUP_DURATION', 'batch_size': $BATCH_SIZE, 'k6_image': '$K6_IMAGE',
+  'warmup_duration': '$WARMUP_DURATION', 'batch_size': $BATCH_SIZE,
+  'preallocated_vus': '${PREALLOCATED_VUS}', 'max_vus': '${MAX_VUS}', 'k6_image': '$K6_IMAGE',
   'clone_seconds': '${BENCH_CLONE_SECONDS:-}', 'host_platform': platform.platform(),
   'docker_version': subprocess.check_output(['docker', '--version'], text=True).strip(),
 }
@@ -125,6 +128,7 @@ run_k6() {
   local duration="$1" output="$2"
   docker run --rm --network "$NETWORK" -e BASE_URL=http://backend:8080 -e API_KEY="$API_KEY" \
     -e BENCH_RATE="$RATE" -e BENCH_DURATION="$duration" -e BENCH_BATCH_SIZE="$BATCH_SIZE" \
+    -e BENCH_PREALLOCATED_VUS="$PREALLOCATED_VUS" -e BENCH_MAX_VUS="$MAX_VUS" \
     -v "$ROOT_DIR/benchmarks/runtime/k6:/scripts:ro" -v "$RESULT_DIR:/results" \
     "$K6_IMAGE" run --summary-export "/results/$output" /scripts/ingestion.js
 }
