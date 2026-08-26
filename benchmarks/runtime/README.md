@@ -1,50 +1,51 @@
-# Node vs Bun backend benchmark
+# Node vs Bun: cold Docker build and default-profile benchmark
 
-This harness compares the production backend from two Git branches on two otherwise identical Linux VMs. It uses the branch's own `packages/backend/Dockerfile`, so the measured runtime is Node on the pnpm branch and Bun on the migration branch. PostgreSQL/TimescaleDB and Redis are started locally in fresh disposable containers for every run.
+The runner downloads a requested Git branch, builds its **backend and frontend production Docker images**, and starts `docker/docker-compose.yml` with **no profiles enabled**. This is the normal LogTide deployment: TimescaleDB, Redis, backend, worker and frontend. It then executes a deterministic k6 ingestion workload against the backend.
 
-## What it measures
+The same scripts live on both comparison branches:
 
-- **Throughput:** `requests_per_second` and `logs_ingested` under a fixed arrival rate.
-- **Latency:** HTTP p50/p90/p95/p99, max, plus ingestion p95/p99.
-- **Reliability:** failed request rate, failed checks, and `dropped_iterations` (the load generator could not sustain the target rate).
-- **Memory:** Docker cgroup memory at one-second intervals: start, end, peak, net growth, and least-squares memory-growth rate per hour. A positive sustained slope/end growth is a leak signal; repeat a longer run to confirm it.
+- `feat/runtime-benchmarks`: Node + pnpm baseline from `main`;
+- `feat/bun-runtime-migration`: Bun migration.
 
-The output is deliberately JSON so results from the two VMs can be diffed without manually transcribing terminal output.
+## Single command per VPS
 
-## Fair-comparison rules
-
-1. Use the same VM image, CPU/RAM/disk class, Docker version, region and architecture. Do not place both backends on the same VM.
-2. Use the same commit base apart from the runtime migration, fixed dependency lockfiles, and the same values for `BENCH_*` settings.
-3. Stop other CPU- or memory-intensive work. Keep the VMs on AC/performance CPU governor where applicable.
-4. Run at least three times per runtime and compare medians. Alternate the order (Node → Bun on one round, Bun → Node on the next) to reduce time-of-day and noisy-neighbour bias.
-5. The harness resets containers and volumes before each run. Do not compare results that reuse a database.
-
-## Run on each VM
-
-Prerequisites: Git, Docker Engine with Compose v2, `curl`, Python 3, and outbound access to pull Docker images. No host Node, pnpm, Bun or k6 installation is needed.
+Run this from any directory on a disposable/dedicated VPS. The script itself is in either branch, so clone the baseline once to invoke it, or download the raw file from GitHub.
 
 ```bash
-# Node VM
-git clone <repository-url> logtide && cd logtide
-git switch feat/runtime-benchmarks
-BENCH_DURATION=10m BENCH_RATE=100 ./benchmarks/runtime/run-vm-benchmark.sh
+# First VPS: Node baseline
+./benchmarks/runtime/run-branch-on-vm.sh \
+  git@github.com:pileskyd/logtide.git feat/runtime-benchmarks
 
-# Bun VM
-git clone <repository-url> logtide && cd logtide
-git switch feat/bun-runtime-migration
-BENCH_DURATION=10m BENCH_RATE=100 ./benchmarks/runtime/run-vm-benchmark.sh
+# Second (or the same cleaned) VPS: Bun branch
+./benchmarks/runtime/run-branch-on-vm.sh \
+  git@github.com:pileskyd/logtide.git feat/bun-runtime-migration
 ```
 
-Copy each `benchmark-results/runtime/*/result.json` and its `metadata.json` to one place. The defaults are 100 requests/s, batches of 10 logs, a 30-second warm-up, and a 3-minute measured run. For a memory-leak check use `BENCH_DURATION=30m` or longer. Keep every `BENCH_*` value identical across VMs.
+Optional third argument chooses a clone directory. It refuses to overwrite one. Requirements are Git, Docker Engine with Compose v2, `curl`, Python 3 and `awk`; the host does not need Node, pnpm, Bun or k6.
 
-## Interpreting results
+For a longer leak run, use identical settings before the command:
 
-For a runtime A relative to baseline B, calculate:
+```bash
+BENCH_DURATION=30m BENCH_WARMUP_DURATION=1m BENCH_RATE=100 \
+  ./benchmarks/runtime/run-branch-on-vm.sh git@github.com:pileskyd/logtide.git feat/runtime-benchmarks
+```
 
-- throughput change: `(A.rps / B.rps - 1) × 100%` — only valid when both have zero dropped iterations;
-- latency change: `(A.p95 / B.p95 - 1) × 100%` — lower is better;
-- peak-memory change: `(A.peak_mib / B.peak_mib - 1) × 100%` — lower is better;
-- leak indication: compare `growth_mib` and `linear_growth_mib_per_hour` from runs long enough to reach steady state;
-- correctness gate: `failed_request_rate == 0`, `checks_failed == 0`, and `dropped_iterations == 0` before declaring a performance win.
+## What is recorded
 
-Container memory is intentionally used instead of `process.memoryUsage()`: it includes native allocations and makes Node and Bun comparable. It does **not** prove a leak on its own; inspect the time series (`container-samples.csv`) and reproduce the slope over multiple long runs.
+Every run creates `benchmark-results/runtime/<branch>-<timestamp>/` inside its cloned checkout:
+
+- `metadata.json`: commit, branch, selected runtime, image tags, Docker/k6 versions and workload settings;
+- `telemetry.jsonl`: wall-clock duration and status of cleanup, backend build, frontend build, Compose default-profile start, backend readiness, warm-up, measured load and report generation;
+- `result.json`: the comparison report;
+- `k6-summary.json` and `k6-output.txt`: raw load-generator data;
+- `container-samples.csv`: one-second backend container CPU/RSS samples.
+
+`result.json` reports request rate, HTTP and ingestion p50/p90/p95/p99/max, request/check errors, dropped iterations, ingested logs, and memory start/end/peak/growth/slope. Docker build/install/start times are in **telemetry only**; they are not mixed into request latency, throughput or memory metrics.
+
+## Cache handling and a fair comparison
+
+The images are always built with `docker build --pull --no-cache`: no Docker build layer or dependency-install cache contributes to the recorded build phase. Pull/network time can still vary and is therefore only lifecycle telemetry, never a runtime-performance result. The test stack and volumes are destroyed before and after each run, so database/Redis state does not carry over.
+
+Use the same VPS sequentially if that is your comparison method, with the same VM image, Docker version, CPU/RAM/disk class, architecture, region and `BENCH_*` settings. Do at least three alternating runs per runtime and compare medians. A result is valid only if both runs have zero failed requests/checks and zero dropped iterations.
+
+This benchmark evaluates the **deployable migration**, including its Docker base image and runtime-specific dependencies. For an isolated engine-only comparison, use a separately built identical `dist` artifact and launch it under `node` and `bun`; that is deliberately not what this production-image test claims to measure.
