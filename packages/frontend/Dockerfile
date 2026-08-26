@@ -3,7 +3,7 @@ FROM node:20-alpine AS builder
 
 # Install pnpm and build dependencies
 RUN apk add --no-cache python3 make g++ && \
-    npm install -g pnpm
+    npm install -g pnpm@10.19.0
 
 WORKDIR /app
 
@@ -35,8 +35,8 @@ RUN pnpm --filter '@logtide/frontend' build
 # Production stage
 FROM node:20-alpine
 
-# Install pnpm
-RUN npm install -g pnpm
+# Install the lockfile-compatible pnpm version
+RUN npm install -g pnpm@10.19.0
 
 WORKDIR /app
 
