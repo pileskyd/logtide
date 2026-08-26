@@ -60,7 +60,14 @@ PUBLIC_API_URL=http://localhost:8080
 LOGTIDE_DSN=
 PUBLIC_LOGTIDE_DSN=
 INTERNAL_LOGGING_ENABLED=false
+# The benchmark controls load itself; application rate limiting must not become
+# the measured bottleneck.
+RATE_LIMIT_MAX=100000
+RATE_LIMIT_WINDOW=60000
 EOF
+# grafana/k6 runs as an unprivileged container user and must be able to write
+# summary JSON into this host bind mount.
+chmod a+rwx "$RESULT_DIR"
 
 echo "Results: $RESULT_DIR"
 # --no-cache makes compilation/install timings reproducible and keeps cached layers
